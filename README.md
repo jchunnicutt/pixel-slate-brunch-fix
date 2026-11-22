@@ -37,13 +37,18 @@ sudo ./install-nocturne-brunch-fix.sh \
   ```
 
 ## Bonus: Stop Power Button From Shutting Down After Sleep on Linux Dual-Boot
+
+On Linux dual-boot setups (Fedora/GNOME), waking the Pixel Slate from suspend with the physical power button sends a delayed `KEY_POWER` event that triggers an immediate shutdown. Use `keyd` to swallow `KEY_POWER` while keeping hardware wake-from-sleep and physical volume buttons working:
+
 ```bash
-sudo mkdir -p /etc/systemd/logind.conf.d
-sudo tee /etc/systemd/logind.conf.d/99-pixel-slate-power.conf << 'EOF'
-[Login]
-HandlePowerKey=ignore
-HandlePowerKeyLongPress=poweroff
+sudo dnf install -y keyd
+sudo mkdir -p /etc/keyd
+sudo tee /etc/keyd/default.conf << 'EOF'
+[ids]
+*
+
+[main]
+power = noop
 EOF
-gsettings set org.gnome.settings-daemon.plugins.power power-button-action 'nothing'
-sudo systemctl reload systemd-logind
+sudo systemctl enable --now keyd
 ```
